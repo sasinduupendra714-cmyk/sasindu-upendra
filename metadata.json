@@ -1,0 +1,5 @@
+{
+  "name": "StudyFlow",
+  "description": "A Spotify-inspired study dashboard with AI planning, analytics, and focus mode for A/L students.",
+  "requestFramePermissions": []
+}
