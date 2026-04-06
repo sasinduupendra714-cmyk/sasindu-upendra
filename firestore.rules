@@ -1,0 +1,191 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Fields:
+    //   - points: number (required)
+    //   - streak: number (required)
+    //   - lastStudyDate: string (optional, YYYY-MM-DD)
+    //   - badges: array of objects (required)
+    //   - totalSessions: number (required)
+    //   - totalStudyTime: number (required)
+    //
+    // Collection: /users/{userId}/subjects/{subjectId}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - score: number (required)
+    //   - focus: number (required)
+    //   - weakCount: number (required)
+    //   - status: string (required, enum: Critical, Weak, Strong)
+    //   - priorityScore: number (required)
+    //   - readiness: number (required)
+    //   - gradient: string (required)
+    //   - topics: array of objects (required)
+    //
+    // Collection: /users/{userId}/study_logs/{logId}
+    // Fields:
+    //   - id: string (required)
+    //   - subjectId: string (required)
+    //   - topicId: string (required)
+    //   - duration: number (required)
+    //   - focusLevel: number (required)
+    //   - notes: string (required)
+    //   - timestamp: string (required, ISO 8601)
+    //
+    // Collection: /users/{userId}/schedules/weekly
+    // Fields:
+    //   - Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday: array of Activity objects
+    //
+    // Collection: /users/{userId}/recommendations/{recId}
+    // Fields:
+    //   - id: string (required)
+    //   - title: string (required)
+    //   - description: string (required)
+    //   - priority: string (required, enum: High, Medium, Low)
+    //   - reason: string (required)
+    //   - liked: bool (optional)
+    //   - dismissed: bool (optional)
+    //
+    // Collection: /users/{userId}/exams/{examId}
+    // Fields:
+    //   - id: string (required)
+    //   - title: string (required)
+    //   - date: string (required, YYYY-MM-DD)
+    //   - marks: array of objects (required)
+    //   - totalScore: number (required)
+    //   - averageScore: number (required)
+    //   - rank: number (optional)
+    //   - notes: string (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}$");
+    }
+
+    function isValidDateTimeString(dateTimeStr) {
+      return dateTimeStr is string && dateTimeStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUserProfile(data) {
+      return hasRequiredFields(['points', 'streak', 'badges', 'totalSessions', 'totalStudyTime']) &&
+             data.points is number && data.points >= 0 &&
+             data.streak is number && data.streak >= 0 &&
+             data.badges is list &&
+             data.totalSessions is number && data.totalSessions >= 0 &&
+             data.totalStudyTime is number && data.totalStudyTime >= 0 &&
+             (!('lastStudyDate' in data) || isValidDateString(data.lastStudyDate));
+    }
+
+    function isValidSubject(data) {
+      return hasRequiredFields(['id', 'name', 'score', 'focus', 'weakCount', 'status', 'priorityScore', 'readiness', 'gradient', 'topics']) &&
+             data.id is string && data.name is string && data.name.size() < 100 &&
+             data.score is number && data.focus is number && data.weakCount is number &&
+             data.status in ['Critical', 'Weak', 'Strong'] &&
+             data.priorityScore is number && data.readiness is number &&
+             data.gradient is string && data.topics is list;
+    }
+
+    function isValidStudyLog(data) {
+      return hasRequiredFields(['id', 'subjectId', 'topicId', 'duration', 'focusLevel', 'notes', 'timestamp']) &&
+             data.id is string && data.subjectId is string && data.topicId is string &&
+             data.duration is number && data.duration > 0 &&
+             data.focusLevel is number && data.focusLevel >= 1 && data.focusLevel <= 5 &&
+             data.notes is string && data.notes.size() < 5000 &&
+             isValidDateTimeString(data.timestamp);
+    }
+
+    function isValidAIRecommendation(data) {
+      return hasRequiredFields(['id', 'title', 'description', 'priority', 'reason']) &&
+             data.id is string && data.title is string && data.description is string &&
+             data.priority in ['High', 'Medium', 'Low'] &&
+             data.reason is string;
+    }
+
+    function isValidExamRecord(data) {
+      return hasRequiredFields(['id', 'title', 'date', 'marks', 'totalScore', 'averageScore']) &&
+             data.id is string && data.title is string &&
+             isValidDateString(data.date) &&
+             data.marks is list &&
+             data.totalScore is number && data.averageScore is number;
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow delete: if isOwner(userId);
+
+      match /subjects/{subjectId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidSubject(request.resource.data);
+        allow update: if isOwner(userId) && isValidSubject(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      match /study_logs/{logId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidStudyLog(request.resource.data);
+        allow update: if isOwner(userId) && isValidStudyLog(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      match /schedules/{scheduleId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+
+      match /recommendations/{recId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidAIRecommendation(request.resource.data);
+        allow update: if isOwner(userId) && isValidAIRecommendation(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      match /exams/{examId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidExamRecord(request.resource.data);
+        allow update: if isOwner(userId) && isValidExamRecord(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

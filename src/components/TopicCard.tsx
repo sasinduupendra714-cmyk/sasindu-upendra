@@ -13,6 +13,7 @@ export default function TopicCard({ topic, subjectName, onStartFocus }: TopicCar
   return (
     <motion.div 
       whileHover={{ y: -8, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       className="group bg-[#181818] hover:bg-[#282828] p-4 rounded-xl transition-all duration-300 relative hover:shadow-2xl hover:shadow-black/50 border border-transparent hover:border-white/10"
     >
       <div className="relative aspect-square mb-4 rounded-lg overflow-hidden shadow-2xl">

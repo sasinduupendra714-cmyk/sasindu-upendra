@@ -139,7 +139,12 @@ export default function Analytics({ subjects, studyLogs, exams }: AnalyticsProps
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-[#181818] p-6 rounded-2xl border border-white/5">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-[#181818] p-6 rounded-2xl border border-white/5"
+        >
           <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-[#1DB954]" />
             Subject Balance
@@ -148,8 +153,8 @@ export default function Analytics({ subjects, studyLogs, exams }: AnalyticsProps
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#333" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#4b5563' }} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? 8 : 12 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#4b5563', fontSize: 10 }} />
                 <Radar name="Performance" dataKey="Score" stroke="#1DB954" fill="#1DB954" fillOpacity={0.4} />
                 <Radar name="Readiness" dataKey="Readiness" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
                 <Tooltip 
@@ -159,9 +164,14 @@ export default function Analytics({ subjects, studyLogs, exams }: AnalyticsProps
               </RadarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-[#181818] p-6 rounded-2xl border border-white/5">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-[#181818] p-6 rounded-2xl border border-white/5"
+        >
           <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-[#1DB954]" />
             Topic Mastery Distribution
@@ -198,10 +208,15 @@ export default function Analytics({ subjects, studyLogs, exams }: AnalyticsProps
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      <div className="bg-[#181818] p-6 rounded-2xl border border-white/5">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-[#181818] p-6 rounded-2xl border border-white/5"
+      >
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
           <Star className="w-5 h-5 text-yellow-500" />
           Focus Level Trend (Last 7 Sessions)
@@ -226,9 +241,14 @@ export default function Analytics({ subjects, studyLogs, exams }: AnalyticsProps
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="bg-[#181818] p-6 rounded-2xl border border-white/5">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-[#181818] p-6 rounded-2xl border border-white/5"
+      >
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-[#1DB954]" />
           Subject Mastery Trend (Last 14 Days)
@@ -265,7 +285,7 @@ export default function Analytics({ subjects, studyLogs, exams }: AnalyticsProps
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       <div className="bg-[#181818] p-6 rounded-2xl border border-white/5">
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">

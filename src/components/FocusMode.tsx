@@ -121,18 +121,18 @@ export default function FocusMode({ subjectName, onClose }: FocusModeProps) {
           </button>
         </div>
 
-        <div className="mt-16 grid grid-cols-3 gap-12 w-full max-w-md">
+        <div className="mt-12 md:mt-16 grid grid-cols-3 gap-6 md:gap-12 w-full max-w-md">
           <div className="text-center">
-            <p className="text-2xl font-bold">90m</p>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Goal</p>
+            <p className="text-xl md:text-2xl font-bold">90m</p>
+            <p className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Goal</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold">0</p>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Distractions</p>
+            <p className="text-xl md:text-2xl font-bold">0</p>
+            <p className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Distractions</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold">High</p>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Intensity</p>
+            <p className="text-xl md:text-2xl font-bold">High</p>
+            <p className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest">Intensity</p>
           </div>
         </div>
       </div>

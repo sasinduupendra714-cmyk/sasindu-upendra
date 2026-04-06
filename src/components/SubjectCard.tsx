@@ -33,6 +33,7 @@ export default function SubjectCard({ subject, onStartFocus }: SubjectCardProps)
   return (
     <motion.div 
       whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
       className="group relative bg-[#181818] rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-300 shadow-2xl"
     >
       {/* Background Image & Gradient */}
@@ -92,7 +93,14 @@ export default function SubjectCard({ subject, onStartFocus }: SubjectCardProps)
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xs font-bold leading-none">{Math.round(subject.readiness)}%</span>
+                <motion.span 
+                  key={subject.readiness}
+                  initial={{ scale: 1.1, color: '#1DB954' }}
+                  animate={{ scale: 1, color: '#fff' }}
+                  className="text-xs font-bold leading-none"
+                >
+                  {Math.round(subject.readiness)}%
+                </motion.span>
                 <span className="text-[8px] text-gray-500 uppercase font-bold">Ready</span>
               </div>
             </div>

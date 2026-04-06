@@ -87,6 +87,15 @@ export default function ManageData({
   const [editTopicResources, setEditTopicResources] = useState<Resource[]>([]);
   const [newResource, setNewResource] = useState<{ title: string, url: string, type: Resource['type'] }>({ title: '', url: '', type: 'link' });
   
+  // Resource Modal State
+  const [resourceModal, setResourceModal] = useState<{
+    isOpen: boolean;
+    subjectId: string;
+    topicId: string;
+    topicTitle: string;
+    resources: Resource[];
+  } | null>(null);
+  
   // Search State
   const [syllabusSearch, setSyllabusSearch] = useState('');
   const [logsSearch, setLogsSearch] = useState('');
@@ -632,6 +641,21 @@ export default function ManageData({
                                           <Edit2 className="w-4 h-4" />
                                         </button>
                                       )}
+                                      {!editingTopic && (
+                                        <button 
+                                          onClick={() => setResourceModal({
+                                            isOpen: true,
+                                            subjectId: s.id,
+                                            topicId: topic.id,
+                                            topicTitle: topic.title,
+                                            resources: topic.resources || []
+                                          })}
+                                          className="p-1 text-gray-500 hover:text-[#1DB954] transition-colors"
+                                          title="Manage Resources"
+                                        >
+                                          <LinkIcon className="w-4 h-4" />
+                                        </button>
+                                      )}
                                       <button 
                                         onClick={() => setConfirmModal({
                                           isOpen: true,
@@ -1153,6 +1177,7 @@ export default function ManageData({
                             <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Rank (Optional)</label>
                             <input 
                               type="number" 
+                              min="1"
                               value={examRank}
                               onChange={(e) => setExamRank(e.target.value)}
                               placeholder="e.g. 5"
@@ -1433,6 +1458,144 @@ export default function ManageData({
               </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Resource Modal */}
+      <AnimatePresence>
+        {resourceModal?.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#121212] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+            >
+              <div className="p-4 md:p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
+                <div>
+                  <h3 className="text-lg md:text-xl font-bold">Manage Resources</h3>
+                  <p className="text-[10px] md:text-xs text-gray-400 mt-1">{resourceModal.topicTitle}</p>
+                </div>
+                <button 
+                  onClick={() => setResourceModal(null)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-h-[60vh] overflow-y-auto scrollbar-hide">
+                {/* Add New Resource */}
+                <div className="space-y-3 bg-white/5 p-3 md:p-4 rounded-2xl border border-white/5">
+                  <p className="text-[8px] md:text-[10px] font-bold text-[#1DB954] uppercase tracking-widest">Add New Resource</p>
+                  <div className="space-y-2">
+                    <input 
+                      type="text" 
+                      placeholder="Resource Title (e.g. Video Tutorial)"
+                      value={newResource.title}
+                      onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#1DB954]"
+                    />
+                    <div className="flex gap-2">
+                      <select 
+                        value={newResource.type}
+                        onChange={(e) => setNewResource({ ...newResource, type: e.target.value as Resource['type'] })}
+                        className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#1DB954]"
+                      >
+                        <option value="link">Link</option>
+                        <option value="video">Video</option>
+                        <option value="pdf">PDF</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <input 
+                        type="text" 
+                        placeholder="URL"
+                        value={newResource.url}
+                        onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
+                        className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#1DB954]"
+                      />
+                    </div>
+                    <button 
+                      onClick={() => {
+                        if (newResource.title && newResource.url && resourceModal) {
+                          const updatedResources = [...resourceModal.resources, { ...newResource, id: Math.random().toString(36).substr(2, 9) }];
+                          setResourceModal({ ...resourceModal, resources: updatedResources });
+                          setNewResource({ title: '', url: '', type: 'link' });
+                        }
+                      }}
+                      className="w-full bg-[#1DB954] text-black font-bold py-2 rounded-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 text-xs md:text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Resource
+                    </button>
+                  </div>
+                </div>
+
+                {/* Resource List */}
+                <div className="space-y-2">
+                  <p className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Current Resources ({resourceModal.resources.length})</p>
+                  {resourceModal.resources.length === 0 ? (
+                    <div className="text-center py-6 md:py-8 bg-white/5 rounded-2xl border border-dashed border-white/10">
+                      <LinkIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-600 mx-auto mb-2" />
+                      <p className="text-xs md:text-sm text-gray-500">No resources added yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {resourceModal.resources.map(res => (
+                        <div key={res.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 group">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className={cn(
+                              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                              res.type === 'video' ? "bg-red-500/10 text-red-500" : 
+                              res.type === 'pdf' ? "bg-blue-500/10 text-blue-500" : 
+                              "bg-[#1DB954]/10 text-[#1DB954]"
+                            )}>
+                              {res.type === 'video' ? <Video className="w-4 h-4" /> : 
+                               res.type === 'pdf' ? <FileText className="w-4 h-4" /> : 
+                               <LinkIcon className="w-4 h-4" />}
+                            </div>
+                            <div className="overflow-hidden">
+                              <p className="text-xs md:text-sm font-medium truncate">{res.title}</p>
+                              <p className="text-[8px] md:text-[10px] text-gray-500 truncate">{res.url}</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const updatedResources = resourceModal.resources.filter(r => r.id !== res.id);
+                              setResourceModal({ ...resourceModal, resources: updatedResources });
+                            }}
+                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 md:p-6 bg-white/5 border-t border-white/10 flex gap-3">
+                <button 
+                  onClick={() => setResourceModal(null)}
+                  className="flex-1 px-4 py-2 md:py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs md:text-sm font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    if (resourceModal) {
+                      onUpdateResources(resourceModal.subjectId, resourceModal.topicId, resourceModal.resources);
+                      setResourceModal(null);
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 md:py-3 bg-[#1DB954] text-black rounded-xl text-xs md:text-sm font-bold hover:scale-[1.02] transition-transform"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

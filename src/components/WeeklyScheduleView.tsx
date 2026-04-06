@@ -18,16 +18,16 @@ export default function WeeklyScheduleView({ schedule }: WeeklyScheduleViewProps
         <p className="text-gray-400">Your optimized study routine for the week.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 overflow-x-auto pb-8 scrollbar-hide">
+      <div className="flex lg:grid lg:grid-cols-7 overflow-x-auto pb-8 scrollbar-hide gap-6 snap-x snap-mandatory">
         {days.map((day, dayIndex) => (
           <motion.div 
             key={day}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: dayIndex * 0.05 }}
-            className="min-w-[300px] lg:min-w-0 flex flex-col gap-4"
+            className="min-w-[280px] lg:min-w-0 flex flex-col gap-4 snap-start"
           >
-            <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md py-2 border-b border-white/10 mb-2">
+            <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-md py-4 border-b border-white/10 mb-2">
               <h3 className="text-xl font-bold text-[#1DB954]">{day}</h3>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                 {schedule[day].filter(a => a.type === 'study').length} Study Blocks

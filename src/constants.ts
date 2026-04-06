@@ -1,6 +1,6 @@
 import { WeeklySchedule, Subject, Badge } from './types';
 
-export const SYLLABUS_VERSION = '2026-AL-SL-V2';
+export const SYLLABUS_VERSION = '2026-AL-SL-V3';
 
 export const INITIAL_SUBJECTS: Subject[] = [
   {
@@ -41,17 +41,17 @@ export const INITIAL_SUBJECTS: Subject[] = [
     priorityScore: 0,
     readiness: 0,
     gradient: 'from-blue-500/20 to-blue-900/40',
-    image: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400',
     topics: [
       { id: 'p1', title: '01. Units & Measurements', mastery: 85, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p2', title: '02. Mechanics', mastery: 55, image: 'https://images.unsplash.com/photo-1535813543269-7328ec13954e?auto=format&fit=crop&q=80&w=400' },
-      { id: 'p3', title: '03. Oscillations & Waves', mastery: 45, image: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&q=80&w=400' },
+      { id: 'p3', title: '03. Oscillations & Waves', mastery: 45, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p4', title: '04. Thermal Physics', mastery: 60, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p5', title: '05. Gravitational Fields', mastery: 50, image: 'https://images.unsplash.com/photo-1535813543269-7328ec13954e?auto=format&fit=crop&q=80&w=400' },
-      { id: 'p6', title: '06. Electrostatic Fields', mastery: 40, image: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&q=80&w=400' },
+      { id: 'p6', title: '06. Electrostatic Fields', mastery: 40, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p7', title: '07. Magnetic Fields', mastery: 35, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p8', title: '08. Current Electricity', mastery: 55, image: 'https://images.unsplash.com/photo-1535813543269-7328ec13954e?auto=format&fit=crop&q=80&w=400' },
-      { id: 'p9', title: '09. Electronics', mastery: 30, image: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&q=80&w=400' },
+      { id: 'p9', title: '09. Electronics', mastery: 30, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p10', title: '10. Radiation & Matter', mastery: 65, image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=400' },
       { id: 'p11', title: '11. Properties of Matter', mastery: 50, image: 'https://images.unsplash.com/photo-1535813543269-7328ec13954e?auto=format&fit=crop&q=80&w=400' },
     ]

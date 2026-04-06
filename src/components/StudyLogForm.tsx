@@ -11,7 +11,8 @@ interface StudyLogFormProps {
 export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogFormProps) {
   const [subjectId, setSubjectId] = useState(subjects[0]?.id || '');
   const [topicId, setTopicId] = useState(subjects[0]?.topics[0]?.id || '');
-  const [duration, setDuration] = useState(90);
+  const [hours, setHours] = useState(1);
+  const [minutes, setMinutes] = useState(30);
   const [focusLevel, setFocusLevel] = useState(4);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,10 @@ export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogForm
       setError('Please select a subject and topic');
       return;
     }
-    if (duration <= 0) {
+    
+    const totalMinutes = (hours * 60) + minutes;
+    
+    if (totalMinutes <= 0) {
       setError('Duration must be greater than 0');
       return;
     }
@@ -31,7 +35,7 @@ export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogForm
       setError('Focus level must be between 1 and 5');
       return;
     }
-    onSave({ subjectId, topicId, duration, focusLevel, notes });
+    onSave({ subjectId, topicId, duration: totalMinutes, focusLevel, notes });
   };
 
   return (
@@ -83,15 +87,31 @@ export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogForm
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Duration (min)</label>
-              <div className="relative">
-                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input 
-                  type="number"
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-[#1DB954] outline-none"
-                />
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Duration</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input 
+                    type="number"
+                    min="0"
+                    placeholder="Hrs"
+                    value={hours}
+                    onChange={(e) => setHours(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#1DB954] outline-none text-center"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-gray-600 pointer-events-none">HRS</span>
+                </div>
+                <div className="relative flex-1">
+                  <input 
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="Min"
+                    value={minutes}
+                    onChange={(e) => setMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#1DB954] outline-none text-center"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-gray-600 pointer-events-none">MIN</span>
+                </div>
               </div>
             </div>
             <div className="space-y-2">
@@ -103,7 +123,7 @@ export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogForm
                   min="1"
                   max="5"
                   value={focusLevel}
-                  onChange={(e) => setFocusLevel(parseInt(e.target.value))}
+                  onChange={(e) => setFocusLevel(parseInt(e.target.value) || 1)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-[#1DB954] outline-none"
                 />
               </div>
