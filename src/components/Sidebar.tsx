@@ -24,7 +24,7 @@ export default function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
     { id: 'syllabus', icon: Library, label: 'Syllabus', path: '/syllabus' },
     { id: 'weak-areas', icon: AlertCircle, label: 'Weak Areas', path: '/weak-areas' },
     { id: 'achievements', icon: Trophy, label: 'Achievements', path: '/achievements' },
-    { id: 'manage', icon: Settings, label: 'Manage', path: '/manage' },
+    { id: 'manage', icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   const isActive = (path: string) => {
@@ -101,7 +101,13 @@ export default function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
                 <motion.div 
                   layoutId="active-pill"
                   className="absolute left-0 w-1 h-6 bg-[#1DB954] rounded-r-full shadow-[0_0_10px_rgba(29,185,84,0.5)]"
-                />
+                >
+                  <motion.div 
+                    animate={{ opacity: [0.3, 0.8, 0.3] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="absolute inset-0 bg-[#1DB954] blur-sm rounded-r-full"
+                  />
+                </motion.div>
               )}
               <item.icon className={cn(
                 "w-5 h-5 shrink-0 transition-colors duration-300",

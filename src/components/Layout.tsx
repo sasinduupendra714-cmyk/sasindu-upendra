@@ -15,6 +15,7 @@ import { auth, db, googleProvider, signInWithPopup } from '../firebase';
 import { cn } from '../lib/utils';
 import { doc, writeBatch, increment } from 'firebase/firestore';
 import { studyLogSchema } from '../lib/schemas';
+import confetti from 'canvas-confetti';
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -44,6 +45,23 @@ export default function Layout() {
 
   useFirestore();
   useFocusTimer();
+
+  // Badge Unlock Celebration
+  const prevBadgesCount = React.useRef(userProfile.badges.filter(b => b.unlockedAt).length);
+  
+  React.useEffect(() => {
+    const currentCount = userProfile.badges.filter(b => b.unlockedAt).length;
+    if (currentCount > prevBadgesCount.current) {
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.5 },
+        colors: ['#FFD700', '#1DB954', '#ffffff']
+      });
+      addToast("New Badge Unlocked! 🏆", "success");
+    }
+    prevBadgesCount.current = currentCount;
+  }, [userProfile.badges, addToast]);
 
   const handleLogin = async () => {
     try {
@@ -140,6 +158,15 @@ export default function Layout() {
 
     try {
       await batch.commit();
+      
+      // Celebration!
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#1DB954', '#ffffff', '#121212']
+      });
+
       addToast(`Logged session for ${subject.name}`, 'success');
       addRecentlyStudied(logData.topicId);
       setIsLoggingSession(false);

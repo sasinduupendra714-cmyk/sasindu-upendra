@@ -33,8 +33,9 @@ export default function SubjectCard({ subject, onStartFocus }: SubjectCardProps)
 
   return (
     <motion.div 
-      whileHover={{ scale: 1.02, y: -4, borderColor: 'rgba(29, 185, 84, 0.3)' }}
+      whileHover={{ scale: 1.02, y: -8, borderColor: 'rgba(29, 185, 84, 0.4)' }}
       whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className="group relative bg-[#181818] rounded-2xl overflow-hidden border border-white/5 transition-all duration-500 shadow-2xl"
     >
       {/* Background Image & Gradient */}

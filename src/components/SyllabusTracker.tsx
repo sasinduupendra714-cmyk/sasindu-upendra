@@ -23,9 +23,28 @@ export default function SyllabusTracker({ subjects, onUpdateMastery, highlighted
     }
   }, [highlightedSubjectId]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="p-4 md:p-8 space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8"
+      >
         <div>
           <h2 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2 text-center md:text-left">Syllabus Tracker</h2>
           <p className="text-gray-400 text-sm text-center md:text-left">Track your progress across the A/L Physical Science stream.</p>
@@ -44,12 +63,18 @@ export default function SyllabusTracker({ subjects, onUpdateMastery, highlighted
             <p className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase">Topics Mastered</p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-8">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 gap-8"
+      >
         {subjects.map((subject) => (
-          <div 
+          <motion.div 
             key={subject.id} 
+            variants={itemVariants}
             ref={el => { subjectRefs.current[subject.id] = el; }}
             className={cn(
               "bg-[#181818] rounded-3xl border overflow-hidden transition-all duration-500",
@@ -135,9 +160,9 @@ export default function SyllabusTracker({ subjects, onUpdateMastery, highlighted
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Resources Modal */}
       <AnimatePresence>

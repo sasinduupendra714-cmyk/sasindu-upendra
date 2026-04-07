@@ -37,6 +37,7 @@ export interface StudyLog {
   focusLevel: number;
   notes: string;
   timestamp: string;
+  resources?: string[];
 }
 
 export interface Activity {

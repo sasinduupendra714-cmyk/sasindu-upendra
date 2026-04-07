@@ -8,6 +8,8 @@ interface StudyLogFormProps {
   onClose: () => void;
 }
 
+import { motion, AnimatePresence } from 'motion/react';
+
 export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogFormProps) {
   const [subjectId, setSubjectId] = useState(subjects[0]?.id || '');
   const [topicId, setTopicId] = useState(subjects[0]?.topics[0]?.id || '');
@@ -40,7 +42,12 @@ export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogForm
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#181818] w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        className="bg-[#181818] w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
+      >
         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-[#1DB954]/10 to-transparent">
           <h3 className="text-xl font-bold flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#1DB954]" />
@@ -148,7 +155,7 @@ export default function StudyLogForm({ subjects, onSave, onClose }: StudyLogForm
             Save Session
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

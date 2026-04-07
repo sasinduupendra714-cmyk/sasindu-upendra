@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Zap, Clock, Target, Flame, Coffee, Play, Sparkles, TrendingUp } from 'lucide-react';
+import { Zap, Clock, Target, Flame, Coffee, Play, Sparkles, TrendingUp, BookOpen } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../lib/utils';
 import CurrentScheduleBlock from '../components/CurrentScheduleBlock';
@@ -8,6 +8,8 @@ import Planner from '../components/Planner';
 import TopicCard from '../components/TopicCard';
 import SubjectCard from '../components/SubjectCard';
 import { useNavigate } from 'react-router-dom';
+
+import { CardSkeleton } from '../components/ui/Skeleton';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,23 +21,11 @@ export default function Home() {
     setIsFocusMode, 
     setIsPaused, 
     setActiveSession,
-    addToast
+    addToast,
+    isAuthReady
   } = useAppStore();
 
-  const startFocus = (subjectId: string, topicId?: string) => {
-    useAppStore.getState().setActiveSubjectId(subjectId);
-    setIsFocusMode(true);
-    setIsPaused(false);
-    setActiveSession({
-      subjectId,
-      topicId: topicId || subjects.find(s => s.id === subjectId)?.topics[0]?.id || '',
-      elapsedSeconds: 0,
-      totalSeconds: 90 * 60
-    });
-    const subjectName = subjects.find(s => s.id === subjectId)?.name;
-    const topicName = subjects.find(s => s.id === subjectId)?.topics.find(t => t.id === topicId)?.title;
-    addToast(`Starting deep focus session for ${topicName || subjectName}`, 'info');
-  };
+  // ... startFocus and other logic ...
 
   const processedSubjects = useMemo(() => {
     return subjects.map(s => {
@@ -56,6 +46,63 @@ export default function Home() {
       s.topics.some(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [processedSubjects, searchQuery]);
+
+  if (!isAuthReady) {
+    return (
+      <div className="p-4 md:p-8 space-y-12 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (!useAppStore.getState().user) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center text-center p-8 space-y-6">
+        <div className="w-32 h-32 bg-white/5 rounded-full flex items-center justify-center mb-4">
+          <Zap className="w-16 h-16 text-[#1DB954]" />
+        </div>
+        <h2 className="text-3xl font-black tracking-tight">Welcome to StudyFlow</h2>
+        <p className="text-gray-400 max-w-md mx-auto">Please sign in to track your progress, get AI insights, and manage your syllabus.</p>
+      </div>
+    );
+  }
+
+  if (subjects.length === 0 && !searchQuery) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center text-center p-8 space-y-6">
+        <div className="w-32 h-32 bg-white/5 rounded-full flex items-center justify-center mb-4">
+          <BookOpen className="w-16 h-16 text-gray-600" />
+        </div>
+        <h2 className="text-3xl font-black tracking-tight">Your Syllabus is Empty</h2>
+        <p className="text-gray-400 max-w-md mx-auto">Add your subjects and topics to start tracking your progress and getting AI insights.</p>
+        <button 
+          onClick={() => navigate('/manage')}
+          className="px-8 py-4 bg-[#1DB954] text-black rounded-full font-black hover:scale-105 transition-all"
+        >
+          Add Your First Subject
+        </button>
+      </div>
+    );
+  }
+
+  const startFocus = (subjectId: string, topicId?: string) => {
+    useAppStore.getState().setActiveSubjectId(subjectId);
+    setIsFocusMode(true);
+    setIsPaused(false);
+    setActiveSession({
+      subjectId,
+      topicId: topicId || subjects.find(s => s.id === subjectId)?.topics[0]?.id || '',
+      elapsedSeconds: 0,
+      totalSeconds: 90 * 60
+    });
+    const subjectName = subjects.find(s => s.id === subjectId)?.name;
+    const topicName = subjects.find(s => s.id === subjectId)?.topics.find(t => t.id === topicId)?.title;
+    addToast(`Starting deep focus session for ${topicName || subjectName}`, 'info');
+  };
 
   const prioritySubject = processedSubjects[0] || null;
   const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as any;
@@ -130,6 +177,44 @@ export default function Home() {
               );
             })}
           </motion.div>
+        </motion.section>
+      )}
+
+      {/* Recent Sessions Section */}
+      {useAppStore.getState().studyLogs.length > 0 && !searchQuery && (
+        <motion.section variants={itemVariants}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold tracking-tight">Recent Sessions</h2>
+            <button onClick={() => navigate('/analytics')} className="text-sm font-bold text-gray-400 hover:text-white hover:underline">View History</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {useAppStore.getState().studyLogs.slice(0, 3).map((log) => {
+              const subject = subjects.find(s => s.id === log.subjectId);
+              const topic = subject?.topics.find(t => t.id === log.topicId);
+              return (
+                <motion.div
+                  key={log.id}
+                  whileHover={{ scale: 1.02, backgroundColor: '#282828' }}
+                  onClick={() => navigate(`/session/${log.id}`)}
+                  className="bg-[#181818] p-4 rounded-xl border border-white/5 cursor-pointer transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-[#1DB954]/10 rounded-lg flex items-center justify-center shrink-0">
+                      <Clock className="w-6 h-6 text-[#1DB954]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm truncate group-hover:text-[#1DB954] transition-colors">{topic?.title || 'Study Session'}</h4>
+                      <p className="text-xs text-gray-500 truncate">{subject?.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black">{log.duration}m</p>
+                      <p className="text-[10px] text-gray-600 font-bold uppercase">{new Date(log.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </motion.section>
       )}
 

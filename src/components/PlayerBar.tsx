@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Repeat, Shuffle, Volume2, Maximize2, Minimize2, Zap, Heart, ListMusic, MonitorSpeaker, Volume1, VolumeX, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -41,11 +41,30 @@ export default function PlayerBar({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   })() : '0:00';
 
-  const totalTime = activeSession ? (() => {
-    const mins = Math.floor(activeSession.totalSeconds / 60);
-    const secs = activeSession.totalSeconds % 60;
+  const timeRemaining = activeSession ? (() => {
+    const remaining = Math.max(0, activeSession.totalSeconds - activeSession.elapsedSeconds);
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  })() : '1:30:00';
+  })() : '0:00';
+
+  // Notification logic
+  useEffect(() => {
+    if (activeSession && activeSession.elapsedSeconds >= activeSession.totalSeconds) {
+      if (Notification.permission === 'granted') {
+        new Notification('StudyFlow', {
+          body: 'Focus session complete! Time for a break.',
+          icon: '/favicon.ico'
+        });
+      }
+    }
+  }, [activeSession?.elapsedSeconds, activeSession?.totalSeconds]);
+
+  const requestNotificationPermission = () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  };
 
   const [isLiked, setIsLiked] = useState(false);
   const [volume, setVolume] = useState(70);
@@ -206,7 +225,9 @@ export default function PlayerBar({
                   />
                 )}
               </div>
-              <span className="text-[9px] md:text-[10px] text-gray-400 w-8 tabular-nums font-medium">{totalTime}</span>
+              <span className="text-[9px] md:text-[10px] text-gray-400 w-8 tabular-nums font-medium">
+                {activeSession ? `-${timeRemaining}` : '1:30:00'}
+              </span>
             </div>
           </div>
 
@@ -334,7 +355,7 @@ export default function PlayerBar({
             <div className="space-y-1">
               <div className="flex justify-between text-[9px] text-gray-500 tabular-nums">
                 <span>{timeElapsed}</span>
-                <span>{totalTime}</span>
+                <span>{activeSession ? `-${timeRemaining}` : '1:30:00'}</span>
               </div>
               <div 
                 className="h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"

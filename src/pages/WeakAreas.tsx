@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { useAppStore } from '../store/useAppStore';
 import AIInsights from '../components/AIInsights';
 import { db } from '../firebase';
 import { doc, updateDoc, writeBatch } from 'firebase/firestore';
-import { GoogleGenAI } from "@google/genai";
+import { useMutation } from '@tanstack/react-query';
+import { genAI } from '../services/gemini';
 
 export default function WeakAreas() {
   const { recommendations, subjects, user, addToast } = useAppStore();
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleLikeRecommendation = async (id: string) => {
     if (!user) return;
@@ -30,23 +30,22 @@ export default function WeakAreas() {
     }
   };
 
-  const generateAIInsights = async () => {
-    if (!user) return;
-    setIsLoading(true);
-    addToast("AI is analyzing your performance...", "info");
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+  const analysisMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("User not authenticated");
+      
       const prompt = `Analyze this A/L student's study data and provide 2-3 actionable recommendations. 
       Subjects: ${JSON.stringify(subjects.map(s => ({ name: s.name, readiness: s.readiness, weakCount: s.weakCount })))}
       Return a JSON array of objects with fields: id, title, description, priority (High/Medium/Low), reason.`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
+      const result = await genAI.models.generateContent({
+        model: "gemini-1.5-flash",
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: { responseMimeType: "application/json" }
       });
 
-      const newRecs = JSON.parse(response.text || "[]");
+      const newRecs = JSON.parse(result.text || "[]");
+      
       const batch = writeBatch(db);
       newRecs.forEach((rec: any) => {
         const id = Math.random().toString(36).substr(2, 9);
@@ -54,14 +53,16 @@ export default function WeakAreas() {
         batch.set(recRef, { ...rec, id, liked: false, dismissed: false });
       });
       await batch.commit();
+      return newRecs;
+    },
+    onSuccess: () => {
       addToast("New AI recommendations generated!", "success");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("AI Analysis failed:", error);
       addToast("AI analysis failed. Please try again later.", "error");
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
   return (
     <motion.div
@@ -76,18 +77,23 @@ export default function WeakAreas() {
             <p className="text-gray-400">Actionable recommendations based on your study patterns.</p>
           </div>
           <button 
-            onClick={generateAIInsights}
-            disabled={isLoading}
-            className="px-6 py-3 bg-[#1DB954] text-black rounded-full font-bold hover:scale-105 transition-all disabled:opacity-50"
+            onClick={() => analysisMutation.mutate()}
+            disabled={analysisMutation.isPending}
+            className="px-6 py-3 bg-[#1DB954] text-black rounded-full font-bold hover:scale-105 transition-all disabled:opacity-50 flex items-center gap-2"
           >
-            {isLoading ? 'Analyzing...' : 'Refresh Insights'}
+            {analysisMutation.isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                Analyzing...
+              </>
+            ) : 'Refresh Insights'}
           </button>
         </div>
         <AIInsights 
           recommendations={recommendations} 
           onLike={handleLikeRecommendation} 
           onDismiss={handleDismissRecommendation} 
-          isLoading={isLoading} 
+          isLoading={analysisMutation.isPending} 
         />
       </div>
     </motion.div>

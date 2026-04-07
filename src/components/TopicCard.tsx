@@ -14,8 +14,9 @@ interface TopicCardProps {
 export default function TopicCard({ topic, subjectName, onStartFocus }: TopicCardProps) {
   return (
     <motion.div 
-      whileHover={{ y: -8, scale: 1.02, backgroundColor: '#282828' }}
+      whileHover={{ y: -10, scale: 1.02, backgroundColor: '#282828' }}
       whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className="group bg-[#181818] p-4 rounded-xl transition-all duration-500 relative hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)] border border-transparent hover:border-white/10 cursor-pointer"
     >
       <div className="relative aspect-square mb-4 rounded-lg overflow-hidden shadow-2xl bg-[#121212]">

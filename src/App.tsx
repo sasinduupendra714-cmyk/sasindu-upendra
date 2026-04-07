@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Syllabus from './pages/Syllabus';
@@ -8,19 +8,28 @@ import Analytics from './pages/Analytics';
 import Manage from './pages/Manage';
 import WeakAreas from './pages/WeakAreas';
 import Achievements from './pages/Achievements';
+import SessionDetail from './pages/SessionDetail';
+import Settings from './pages/Settings';
+import ProtectedRoute from './components/ProtectedRoute';
+import { useAppStore } from './store/useAppStore';
 
 export default function App() {
+  const { user, isAuthReady } = useAppStore();
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="syllabus" element={<Syllabus />} />
-          <Route path="schedule" element={<Schedule />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="manage" element={<Manage />} />
-          <Route path="weak-areas" element={<WeakAreas />} />
-          <Route path="achievements" element={<Achievements />} />
+          <Route path="dashboard" element={<Navigate to="/" replace />} />
+          <Route path="syllabus" element={<ProtectedRoute><Syllabus /></ProtectedRoute>} />
+          <Route path="schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
+          <Route path="analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          <Route path="manage" element={<ProtectedRoute><Manage /></ProtectedRoute>} />
+          <Route path="weak-areas" element={<ProtectedRoute><WeakAreas /></ProtectedRoute>} />
+          <Route path="achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+          <Route path="settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="session/:id" element={<ProtectedRoute><SessionDetail /></ProtectedRoute>} />
         </Route>
       </Routes>
     </BrowserRouter>
