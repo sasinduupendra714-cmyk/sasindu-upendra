@@ -68,8 +68,6 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-import { useShallow } from 'zustand/react/shallow';
-
 export function useFirestore() {
   const { 
     user, 
@@ -80,16 +78,7 @@ export function useFirestore() {
     setStudyLogs, 
     setExams, 
     setSchedule 
-  } = useAppStore(useShallow(state => ({
-    user: state.user,
-    setUser: state.setUser,
-    setIsAuthReady: state.setIsAuthReady,
-    setUserProfile: state.setUserProfile,
-    setSubjects: state.setSubjects,
-    setStudyLogs: state.setStudyLogs,
-    setExams: state.setExams,
-    setSchedule: state.setSchedule
-  })));
+  } = useAppStore();
 
   // Auth Listener
   useEffect(() => {

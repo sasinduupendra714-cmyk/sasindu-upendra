@@ -3,14 +3,8 @@ import { motion } from 'motion/react';
 import { useAppStore } from '../store/useAppStore';
 import AnalyticsDashboard from '../components/Analytics';
 
-import { useShallow } from 'zustand/react/shallow';
-
 export default function AnalyticsPage() {
-  const { subjects, studyLogs, exams } = useAppStore(useShallow(state => ({
-    subjects: state.subjects,
-    studyLogs: state.studyLogs,
-    exams: state.exams
-  })));
+  const { subjects, studyLogs, exams } = useAppStore();
 
   const processedSubjects = useMemo(() => {
     return subjects.map(s => {

@@ -2,39 +2,30 @@ import React, { useState } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Repeat, Shuffle, Volume2, Zap, Heart, ListMusic, Volume1, VolumeX, X, Info, ExternalLink, Share2, MoreHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { useAppStore } from '../store/useAppStore';
 
 interface NowPlayingSidebarProps {
+  currentSubject: string;
+  currentSubjectImage?: string;
+  progress: number;
+  timeElapsed: string;
+  totalTime?: string;
   onClose?: () => void;
+  onToggleFocus?: () => void;
+  isPlaying?: boolean;
+  onTogglePlay?: () => void;
 }
 
-export default function NowPlayingSidebar({ onClose }: NowPlayingSidebarProps) {
-  const activeSession = useAppStore(state => state.activeSession);
-  const isPaused = useAppStore(state => state.isPaused);
-  const setIsPaused = useAppStore(state => state.setIsPaused);
-  const setIsFocusMode = useAppStore(state => state.setIsFocusMode);
-  const subjects = useAppStore(state => state.subjects);
-
-  const currentSubjectObj = subjects.find(s => s.id === activeSession?.subjectId);
-  const currentSubject = currentSubjectObj?.name || 'Select a Subject';
-  const currentSubjectImage = currentSubjectObj?.image;
-  const progress = activeSession ? (activeSession.elapsedSeconds / activeSession.totalSeconds) * 100 : 0;
-  const isPlaying = activeSession && !isPaused;
-
-  const timeElapsed = activeSession ? (() => {
-    const mins = Math.floor(activeSession.elapsedSeconds / 60);
-    const secs = activeSession.elapsedSeconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  })() : '0:00';
-
-  const totalTime = activeSession ? (() => {
-    const mins = Math.floor(activeSession.totalSeconds / 60);
-    const secs = activeSession.totalSeconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  })() : '1:30:00';
-
-  const onTogglePlay = () => setIsPaused(!isPaused);
-  const onToggleFocus = () => setIsFocusMode(true);
+export default function NowPlayingSidebar({ 
+  currentSubject, 
+  currentSubjectImage,
+  progress, 
+  timeElapsed, 
+  totalTime = '90:00',
+  onClose,
+  onToggleFocus,
+  isPlaying = false,
+  onTogglePlay
+}: NowPlayingSidebarProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [volume, setVolume] = useState(70);
   const [isMuted, setIsMuted] = useState(false);

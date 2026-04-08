@@ -2,27 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Repeat, Shuffle, Volume2, Maximize2, Minimize2, Zap, Heart, ListMusic, MonitorSpeaker, Volume1, VolumeX, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { useAppStore } from '../store/useAppStore';
+
+import { Subject } from '../types';
 
 interface PlayerBarProps {
+  activeSession: {
+    subjectId: string;
+    topicId: string;
+    elapsedSeconds: number;
+    totalSeconds: number;
+  } | null;
+  isPaused: boolean;
+  onTogglePause: () => void;
+  onStop: () => void;
+  onOpenFocus: () => void;
+  subjects: Subject[];
   className?: string;
 }
 
-export default React.memo(function PlayerBar({ className }: PlayerBarProps) {
-  const activeSession = useAppStore(state => state.activeSession);
-  const isPaused = useAppStore(state => state.isPaused);
-  const setIsPaused = useAppStore(state => state.setIsPaused);
-  const setActiveSession = useAppStore(state => state.setActiveSession);
-  const setIsFocusMode = useAppStore(state => state.setIsFocusMode);
-  const subjects = useAppStore(state => state.subjects);
-
-  const onTogglePause = () => setIsPaused(!isPaused);
-  const onStop = () => {
-    setIsFocusMode(false);
-    setActiveSession(null);
-  };
-  const onOpenFocus = () => setIsFocusMode(true);
-
+export default function PlayerBar({ 
+  activeSession,
+  isPaused,
+  onTogglePause,
+  onStop,
+  onOpenFocus,
+  subjects,
+  className
+}: PlayerBarProps) {
   const currentSubjectObj = subjects.find(s => s.id === activeSession?.subjectId);
   const currentSubject = currentSubjectObj?.name || 'Select a Subject';
   const currentSubjectImage = currentSubjectObj?.image;
@@ -372,4 +378,4 @@ export default React.memo(function PlayerBar({ className }: PlayerBarProps) {
       )}
     </AnimatePresence>
   );
-});
+}

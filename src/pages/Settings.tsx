@@ -5,14 +5,8 @@ import { Settings as SettingsIcon, User, Bell, Shield, Trash2, LogOut, RefreshCw
 import { auth } from '../firebase';
 import { cn } from '../lib/utils';
 
-import { useShallow } from 'zustand/react/shallow';
-
 export default function Settings() {
-  const { user, userProfile, addToast } = useAppStore(useShallow(state => ({
-    user: state.user,
-    userProfile: state.userProfile,
-    addToast: state.addToast
-  })));
+  const { user, userProfile, addToast } = useAppStore();
 
   const handleLogout = async () => {
     try {

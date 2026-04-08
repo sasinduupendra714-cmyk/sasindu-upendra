@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import WeeklyScheduleView from '../components/WeeklyScheduleView';
 
-import { useShallow } from 'zustand/react/shallow';
-
 export default function Schedule() {
   const navigate = useNavigate();
-  const { schedule } = useAppStore(useShallow(state => ({ schedule: state.schedule })));
+  const { schedule } = useAppStore();
 
   return (
     <motion.div

@@ -4,8 +4,6 @@ import { db, auth } from '../firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from './useFirestore';
 
-import { useShallow } from 'zustand/react/shallow';
-
 export function useFocusTimer() {
   const { 
     isPaused, 
@@ -16,16 +14,7 @@ export function useFocusTimer() {
     addToast,
     userProfile,
     setUserProfile
-  } = useAppStore(useShallow(state => ({
-    isPaused: state.isPaused,
-    activeSession: state.activeSession,
-    setActiveSession: state.setActiveSession,
-    setIsFocusMode: state.setIsFocusMode,
-    setIsLoggingSession: state.setIsLoggingSession,
-    addToast: state.addToast,
-    userProfile: state.userProfile,
-    setUserProfile: state.setUserProfile
-  })));
+  } = useAppStore();
 
   const tick = useCallback(() => {
     if (!activeSession || isPaused) return;

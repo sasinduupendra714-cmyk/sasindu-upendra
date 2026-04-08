@@ -10,17 +10,11 @@ import WeakAreas from './pages/WeakAreas';
 import Achievements from './pages/Achievements';
 import SessionDetail from './pages/SessionDetail';
 import Settings from './pages/Settings';
-import Practice from './pages/Practice';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAppStore } from './store/useAppStore';
 
-import { useShallow } from 'zustand/react/shallow';
-
 export default function App() {
-  const { user, isAuthReady } = useAppStore(useShallow(state => ({
-    user: state.user,
-    isAuthReady: state.isAuthReady
-  })));
+  const { user, isAuthReady } = useAppStore();
 
   return (
     <BrowserRouter>
@@ -35,7 +29,6 @@ export default function App() {
           <Route path="weak-areas" element={<ProtectedRoute><WeakAreas /></ProtectedRoute>} />
           <Route path="achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
           <Route path="session/:id" element={<ProtectedRoute><SessionDetail /></ProtectedRoute>} />
         </Route>
       </Routes>

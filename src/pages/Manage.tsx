@@ -7,8 +7,6 @@ import { doc, setDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestor
 import { WeeklySchedule, Activity, ExamRecord, Subject, Topic, Resource, StudyLog } from '../types';
 import { INITIAL_SUBJECTS, INITIAL_BADGES } from '../constants';
 
-import { useShallow } from 'zustand/react/shallow';
-
 export default function Manage() {
   const { 
     subjects, 
@@ -19,16 +17,7 @@ export default function Manage() {
     userProfile, 
     addToast,
     addRecentlyStudied
-  } = useAppStore(useShallow(state => ({
-    subjects: state.subjects,
-    schedule: state.schedule,
-    studyLogs: state.studyLogs,
-    exams: state.exams,
-    user: state.user,
-    userProfile: state.userProfile,
-    addToast: state.addToast,
-    addRecentlyStudied: state.addRecentlyStudied
-  })));
+  } = useAppStore();
 
   const handleUpdateSchedule = async (day: keyof WeeklySchedule, activities: Activity[]) => {
     if (!user) return;
