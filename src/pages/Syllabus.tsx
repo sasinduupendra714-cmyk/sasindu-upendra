@@ -5,8 +5,15 @@ import SyllabusTracker from '../components/SyllabusTracker';
 import { db } from '../firebase';
 import { doc, writeBatch } from 'firebase/firestore';
 
+import { useShallow } from 'zustand/react/shallow';
+
 export default function Syllabus() {
-  const { subjects, user, userProfile, highlightedSubjectId } = useAppStore();
+  const { subjects, user, userProfile, highlightedSubjectId } = useAppStore(useShallow(state => ({
+    subjects: state.subjects,
+    user: state.user,
+    userProfile: state.userProfile,
+    highlightedSubjectId: state.highlightedSubjectId
+  })));
 
   const handleUpdateMastery = async (subjectId: string, topicId: string, mastery: number) => {
     if (!user) return;

@@ -8,8 +8,13 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+import { useShallow } from 'zustand/react/shallow';
+
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isAuthReady } = useAppStore();
+  const { user, isAuthReady } = useAppStore(useShallow(state => ({
+    user: state.user,
+    isAuthReady: state.isAuthReady
+  })));
   const location = useLocation();
 
   if (!isAuthReady) {

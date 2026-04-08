@@ -2,27 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { X, Play, Pause, RotateCcw, Zap, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-
-import { Subject } from '../types';
+import { useAppStore } from '../store/useAppStore';
 
 interface FocusModeProps {
-  subject: Subject;
-  session: {
-    subjectId: string;
-    topicId: string;
-    elapsedSeconds: number;
-    totalSeconds: number;
-  };
-  isPaused: boolean;
-  onTogglePause: () => void;
   onExit: () => void;
 }
 
-export default function FocusMode({ subject, session, isPaused, onTogglePause, onExit }: FocusModeProps) {
+export default function FocusMode({ onExit }: FocusModeProps) {
+  const activeSession = useAppStore(state => state.activeSession);
+  const isPaused = useAppStore(state => state.isPaused);
+  const setIsPaused = useAppStore(state => state.setIsPaused);
+  const subjects = useAppStore(state => state.subjects);
+
+  const subject = subjects.find(s => s.id === activeSession?.subjectId);
+  const session = activeSession;
+  const onTogglePause = () => setIsPaused(!isPaused);
+
   const [isMuted, setIsMuted] = useState(false);
   const [isImmersive, setIsImmersive] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
+
+  if (!subject || !session) return null;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

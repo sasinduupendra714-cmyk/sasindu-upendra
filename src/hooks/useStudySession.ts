@@ -4,11 +4,13 @@ import { db } from '../firebase';
 import { StudyLog } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
+import { useShallow } from 'zustand/react/shallow';
+
 export function useStudySession(sessionId: string | undefined) {
   const [session, setSession] = useState<StudyLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useAppStore();
+  const { user } = useAppStore(useShallow(state => ({ user: state.user })));
 
   useEffect(() => {
     if (!user || !sessionId) {

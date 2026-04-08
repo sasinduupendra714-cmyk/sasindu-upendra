@@ -7,8 +7,15 @@ import { doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { useMutation } from '@tanstack/react-query';
 import { genAI } from '../services/gemini';
 
+import { useShallow } from 'zustand/react/shallow';
+
 export default function WeakAreas() {
-  const { recommendations, subjects, user, addToast } = useAppStore();
+  const { recommendations, subjects, user, addToast } = useAppStore(useShallow(state => ({
+    recommendations: state.recommendations,
+    subjects: state.subjects,
+    user: state.user,
+    addToast: state.addToast
+  })));
 
   const handleLikeRecommendation = async (id: string) => {
     if (!user) return;

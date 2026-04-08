@@ -19,7 +19,7 @@ interface TopBarProps {
   isNowPlayingOpen: boolean;
 }
 
-export default function TopBar({ 
+export default React.memo(function TopBar({ 
   onAutoPlan, 
   onLogSession, 
   onStartFocus, 
@@ -242,4 +242,4 @@ export default function TopBar({
       )}
     </div>
   );
-}
+});

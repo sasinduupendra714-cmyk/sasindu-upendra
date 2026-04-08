@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { useShallow } from 'zustand/react/shallow';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import PlayerBar from './PlayerBar';
@@ -28,10 +29,6 @@ export default function Layout() {
     setIsFocusMode,
     isLoggingSession,
     setIsLoggingSession,
-    activeSession,
-    setActiveSession,
-    isPaused,
-    setIsPaused,
     userProfile,
     user,
     addToast,
@@ -41,7 +38,24 @@ export default function Layout() {
     searchQuery,
     setSearchQuery,
     addRecentlyStudied
-  } = useAppStore();
+  } = useAppStore(useShallow(state => ({
+    subjects: state.subjects,
+    isNowPlayingOpen: state.isNowPlayingOpen,
+    setIsNowPlayingOpen: state.setIsNowPlayingOpen,
+    isFocusMode: state.isFocusMode,
+    setIsFocusMode: state.setIsFocusMode,
+    isLoggingSession: state.isLoggingSession,
+    setIsLoggingSession: state.setIsLoggingSession,
+    userProfile: state.userProfile,
+    user: state.user,
+    addToast: state.addToast,
+    toasts: state.toasts,
+    removeToast: state.removeToast,
+    setHighlightedSubjectId: state.setHighlightedSubjectId,
+    searchQuery: state.searchQuery,
+    setSearchQuery: state.setSearchQuery,
+    addRecentlyStudied: state.addRecentlyStudied
+  })));
 
   useFirestore();
   useFocusTimer();
@@ -63,7 +77,7 @@ export default function Layout() {
     prevBadgesCount.current = currentCount;
   }, [userProfile.badges, addToast]);
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     try {
       await signInWithPopup(auth, googleProvider);
       addToast("Successfully logged in!", "success");
@@ -71,31 +85,31 @@ export default function Layout() {
       console.error("Login failed", error);
       addToast("Login failed. Please try again.", "error");
     }
-  };
+  }, [addToast]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await auth.signOut();
       addToast("Logged out successfully", "info");
     } catch (error) {
       console.error("Logout failed", error);
     }
-  };
+  }, [addToast]);
 
-  const startFocus = (subjectId: string) => {
+  const startFocus = useCallback((subjectId: string) => {
     useAppStore.getState().setActiveSubjectId(subjectId);
     setIsFocusMode(true);
-    setIsPaused(false);
-    setActiveSession({
+    useAppStore.getState().setIsPaused(false);
+    useAppStore.getState().setActiveSession({
       subjectId,
-      topicId: subjects.find(s => s.id === subjectId)?.topics[0]?.id || '',
+      topicId: useAppStore.getState().subjects.find(s => s.id === subjectId)?.topics[0]?.id || '',
       elapsedSeconds: 0,
       totalSeconds: 90 * 60
     });
-    addToast(`Starting deep focus session for ${subjects.find(s => s.id === subjectId)?.name}`, 'info');
-  };
+    addToast(`Starting deep focus session`, 'info');
+  }, [setIsFocusMode, addToast]);
 
-  const handleSaveLog = async (logData: any) => {
+  const handleSaveLog = useCallback(async (logData: any) => {
     if (!user) {
       addToast("Please sign in to save your progress", "error");
       return;
@@ -174,14 +188,19 @@ export default function Layout() {
       console.error("Failed to save log", e);
       addToast("Failed to save session", "error");
     }
-  };
+  }, [user, subjects, userProfile, addToast, addRecentlyStudied, setIsLoggingSession]);
 
-  const handleSubjectClick = (id: string) => {
+  const handleSubjectClick = useCallback((id: string) => {
     setHighlightedSubjectId(id);
     navigate('/syllabus');
     // Reset highlighted subject after a delay
     setTimeout(() => setHighlightedSubjectId(null), 2000);
-  };
+  }, [navigate, setHighlightedSubjectId]);
+
+  const handleAutoPlan = useCallback(() => {}, []);
+  const handleLogSession = useCallback(() => setIsLoggingSession(true), [setIsLoggingSession]);
+  const handleStartFocus = useCallback(() => startFocus(subjects[0]?.id || ''), [startFocus, subjects]);
+  const handleToggleNowPlaying = useCallback(() => setIsNowPlayingOpen(!isNowPlayingOpen), [isNowPlayingOpen, setIsNowPlayingOpen]);
 
   return (
     <div className="flex h-screen bg-black text-white font-sans selection:bg-[#1DB954] selection:text-black overflow-hidden">
@@ -192,9 +211,9 @@ export default function Layout() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <TopBar 
-          onAutoPlan={() => {}} 
-          onLogSession={() => setIsLoggingSession(true)}
-          onStartFocus={() => startFocus(subjects[0]?.id || '')}
+          onAutoPlan={handleAutoPlan} 
+          onLogSession={handleLogSession}
+          onStartFocus={handleStartFocus}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           points={userProfile.points}
@@ -202,7 +221,7 @@ export default function Layout() {
           user={user}
           onLogin={handleLogin}
           onLogout={handleLogout}
-          onToggleNowPlaying={() => setIsNowPlayingOpen(!isNowPlayingOpen)}
+          onToggleNowPlaying={handleToggleNowPlaying}
           isNowPlayingOpen={isNowPlayingOpen}
         />
 
@@ -226,46 +245,15 @@ export default function Layout() {
           </main>
 
           {isNowPlayingOpen && (
-            <NowPlayingSidebar 
-              currentSubject={subjects.find(s => s.id === activeSession?.subjectId)?.name || 'Select a Subject'} 
-              currentSubjectImage={subjects.find(s => s.id === activeSession?.subjectId)?.image}
-              progress={activeSession ? (activeSession.elapsedSeconds / activeSession.totalSeconds) * 100 : 0} 
-              timeElapsed={activeSession ? (() => {
-                const mins = Math.floor(activeSession.elapsedSeconds / 60);
-                const secs = activeSession.elapsedSeconds % 60;
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-              })() : '0:00'}
-              totalTime={activeSession ? (() => {
-                const mins = Math.floor(activeSession.totalSeconds / 60);
-                const secs = activeSession.totalSeconds % 60;
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-              })() : '1:30:00'}
-              onClose={() => setIsNowPlayingOpen(false)}
-            />
+            <NowPlayingSidebar onClose={() => setIsNowPlayingOpen(false)} />
           )}
         </div>
 
-        <PlayerBar 
-          activeSession={activeSession}
-          isPaused={isPaused}
-          onTogglePause={() => setIsPaused(!isPaused)}
-          onStop={() => {
-            setIsFocusMode(false);
-            setActiveSession(null);
-          }}
-          onOpenFocus={() => setIsFocusMode(true)}
-          subjects={subjects}
-        />
+        <PlayerBar />
       </div>
 
-      {isFocusMode && activeSession && (
-        <FocusMode 
-          subject={subjects.find(s => s.id === activeSession.subjectId)!}
-          session={activeSession}
-          isPaused={isPaused}
-          onTogglePause={() => setIsPaused(!isPaused)}
-          onExit={() => setIsFocusMode(false)}
-        />
+      {isFocusMode && (
+        <FocusMode onExit={() => setIsFocusMode(false)} />
       )}
 
       {isLoggingSession && (

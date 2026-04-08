@@ -7,6 +7,8 @@ import { doc, setDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestor
 import { WeeklySchedule, Activity, ExamRecord, Subject, Topic, Resource, StudyLog } from '../types';
 import { INITIAL_SUBJECTS, INITIAL_BADGES } from '../constants';
 
+import { useShallow } from 'zustand/react/shallow';
+
 export default function Manage() {
   const { 
     subjects, 
@@ -17,7 +19,16 @@ export default function Manage() {
     userProfile, 
     addToast,
     addRecentlyStudied
-  } = useAppStore();
+  } = useAppStore(useShallow(state => ({
+    subjects: state.subjects,
+    schedule: state.schedule,
+    studyLogs: state.studyLogs,
+    exams: state.exams,
+    user: state.user,
+    userProfile: state.userProfile,
+    addToast: state.addToast,
+    addRecentlyStudied: state.addRecentlyStudied
+  })));
 
   const handleUpdateSchedule = async (day: keyof WeeklySchedule, activities: Activity[]) => {
     if (!user) return;
@@ -58,7 +69,11 @@ export default function Manage() {
     if (!user) return;
     const id = Math.random().toString(36).substr(2, 9);
     try {
-      await setDoc(doc(db, 'users', user.uid, 'exams', id), { ...exam, id });
+      const examData = { ...exam, id };
+      if (examData.rank === undefined) delete examData.rank;
+      if (examData.notes === undefined) delete examData.notes;
+      
+      await setDoc(doc(db, 'users', user.uid, 'exams', id), examData);
       addToast("Exam added", "success");
     } catch (e) {
       console.error("Failed to add exam", e);
@@ -68,7 +83,11 @@ export default function Manage() {
   const handleEditExam = async (id: string, updatedExam: Partial<ExamRecord>) => {
     if (!user) return;
     try {
-      await updateDoc(doc(db, 'users', user.uid, 'exams', id), updatedExam);
+      const examData = { ...updatedExam };
+      if (examData.rank === undefined) delete examData.rank;
+      if (examData.notes === undefined) delete examData.notes;
+      
+      await updateDoc(doc(db, 'users', user.uid, 'exams', id), examData);
       addToast("Exam updated", "success");
     } catch (e) {
       console.error("Failed to edit exam", e);
@@ -98,7 +117,7 @@ export default function Manage() {
       priorityScore: 0,
       readiness: 0,
       gradient: 'from-gray-500/20 to-gray-900/40',
-      image,
+      ...(image !== undefined && { image }),
       topics: []
     };
     try {
@@ -112,7 +131,10 @@ export default function Manage() {
   const handleEditSubject = async (id: string, name: string, image?: string) => {
     if (!user) return;
     try {
-      await updateDoc(doc(db, 'users', user.uid, 'subjects', id), { name, image });
+      await updateDoc(doc(db, 'users', user.uid, 'subjects', id), { 
+        name, 
+        ...(image !== undefined && { image }) 
+      });
       addToast("Subject updated", "success");
     } catch (e) {
       console.error("Failed to edit subject", e);
@@ -138,7 +160,7 @@ export default function Manage() {
       id: Math.random().toString(36).substr(2, 9),
       title,
       mastery: 0,
-      image
+      ...(image !== undefined && { image })
     };
 
     try {
@@ -156,7 +178,18 @@ export default function Manage() {
     const subject = subjects.find(s => s.id === subjectId);
     if (!subject) return;
 
-    const updatedTopics = subject.topics.map(t => t.id === topicId ? { ...t, title, mastery, image, resources } : t);
+    const updatedTopics = subject.topics.map(t => {
+      if (t.id === topicId) {
+        return {
+          ...t,
+          title,
+          mastery,
+          ...(image !== undefined && { image }),
+          ...(resources !== undefined && { resources })
+        };
+      }
+      return t;
+    });
 
     try {
       await updateDoc(doc(db, 'users', user.uid, 'subjects', subjectId), {

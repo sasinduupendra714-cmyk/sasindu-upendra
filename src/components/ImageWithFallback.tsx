@@ -13,7 +13,7 @@ interface ImageWithFallbackProps {
   showBlur?: boolean;
 }
 
-export default function ImageWithFallback({
+export default React.memo(function ImageWithFallback({
   src,
   alt,
   className,
@@ -84,4 +84,4 @@ export default function ImageWithFallback({
       </AnimatePresence>
     </div>
   );
-}
+});

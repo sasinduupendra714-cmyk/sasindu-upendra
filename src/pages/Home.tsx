@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Zap, Clock, Target, Flame, Coffee, Play, Sparkles, TrendingUp, BookOpen } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../lib/utils';
 import CurrentScheduleBlock from '../components/CurrentScheduleBlock';
@@ -19,11 +20,17 @@ export default function Home() {
     recentlyStudied, 
     searchQuery, 
     setIsFocusMode, 
-    setIsPaused, 
-    setActiveSession,
     addToast,
     isAuthReady
-  } = useAppStore();
+  } = useAppStore(useShallow(state => ({
+    subjects: state.subjects,
+    schedule: state.schedule,
+    recentlyStudied: state.recentlyStudied,
+    searchQuery: state.searchQuery,
+    setIsFocusMode: state.setIsFocusMode,
+    addToast: state.addToast,
+    isAuthReady: state.isAuthReady
+  })));
 
   // ... startFocus and other logic ...
 
@@ -92,8 +99,8 @@ export default function Home() {
   const startFocus = (subjectId: string, topicId?: string) => {
     useAppStore.getState().setActiveSubjectId(subjectId);
     setIsFocusMode(true);
-    setIsPaused(false);
-    setActiveSession({
+    useAppStore.getState().setIsPaused(false);
+    useAppStore.getState().setActiveSession({
       subjectId,
       topicId: topicId || subjects.find(s => s.id === subjectId)?.topics[0]?.id || '',
       elapsedSeconds: 0,

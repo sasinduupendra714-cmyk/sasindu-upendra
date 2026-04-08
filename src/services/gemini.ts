@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 // @ts-ignore
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenAI({ apiKey });
 
 export async function generateStudyPlan(subject: string, topics: string[]) {

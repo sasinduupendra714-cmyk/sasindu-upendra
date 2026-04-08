@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Home, BarChart2, Calendar, AlertCircle, Library, Plus, Search, Settings, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Home, BarChart2, Calendar, AlertCircle, Library, Plus, Search, Settings, Trophy, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
@@ -13,7 +13,50 @@ interface SidebarProps {
   onSubjectClick: (id: string) => void;
 }
 
-export default function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
+const SubjectItem = React.memo(({ subject, isCollapsed, onClick }: { subject: Subject, isCollapsed: boolean, onClick: (id: string) => void }) => {
+  return (
+    <motion.div 
+      whileHover={{ x: isCollapsed ? 0 : 4, scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => onClick(subject.id)}
+      className={cn(
+        "flex items-center gap-3 group cursor-pointer p-1.5 rounded-xl hover:bg-white/10 transition-all border border-transparent", 
+        isCollapsed && "justify-center p-0 w-14 h-14 hover:border-[#1DB954]/50 hover:shadow-[0_0_15px_rgba(29,185,84,0.3)]"
+      )}
+      title={isCollapsed ? subject.name : undefined}
+    >
+      <div className={cn(
+        "rounded-xl flex items-center justify-center text-xs font-black text-white transition-all shadow-lg shrink-0 overflow-hidden relative",
+        isCollapsed ? "w-14 h-14" : "w-10 h-10"
+      )}>
+        <ImageWithFallback
+          src={subject.image}
+          alt={subject.name}
+          containerClassName="w-full h-full"
+          className="group-hover:scale-110 transition-transform duration-500"
+          fallbackGradient={subject.gradient}
+          fallbackText={subject.name[0]}
+          showBlur={false}
+        />
+      </div>
+      {!isCollapsed && (
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold truncate group-hover:text-[#1DB954] transition-colors">{subject.name}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">{subject.topics.length} Topics</span>
+            <span className="w-1 h-1 bg-gray-700 rounded-full" />
+            <span className={cn(
+              "text-[9px] font-bold",
+              subject.readiness > 70 ? "text-[#1DB954]" : "text-yellow-500"
+            )}>{subject.readiness}% Ready</span>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+});
+
+export default React.memo(function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
 
@@ -22,16 +65,17 @@ export default function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
     { id: 'analytics', icon: BarChart2, label: 'Analytics', path: '/analytics' },
     { id: 'schedule', icon: Calendar, label: 'Schedule', path: '/schedule' },
     { id: 'syllabus', icon: Library, label: 'Syllabus', path: '/syllabus' },
+    { id: 'practice', icon: BookOpen, label: 'Practice', path: '/practice' },
     { id: 'weak-areas', icon: AlertCircle, label: 'Weak Areas', path: '/weak-areas' },
     { id: 'achievements', icon: Trophy, label: 'Achievements', path: '/achievements' },
     { id: 'manage', icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
-  const isActive = (path: string) => {
+  const isActive = useCallback((path: string) => {
     if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
-  };
+  }, [location.pathname]);
 
   const containerVariants = {
     hidden: { opacity: 0, x: -20 },
@@ -154,45 +198,12 @@ export default function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
             )}
             <div className={cn("space-y-1", isCollapsed && "space-y-4 flex flex-col items-center")}>
               {subjects.map((subject) => (
-                <motion.div 
+                <SubjectItem 
                   key={subject.id} 
-                  whileHover={{ x: isCollapsed ? 0 : 4, scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => onSubjectClick(subject.id)}
-                  className={cn(
-                    "flex items-center gap-3 group cursor-pointer p-1.5 rounded-xl hover:bg-white/10 transition-all border border-transparent", 
-                    isCollapsed && "justify-center p-0 w-14 h-14 hover:border-[#1DB954]/50 hover:shadow-[0_0_15px_rgba(29,185,84,0.3)]"
-                  )}
-                  title={isCollapsed ? subject.name : undefined}
-                >
-                  <div className={cn(
-                    "rounded-xl flex items-center justify-center text-xs font-black text-white transition-all shadow-lg shrink-0 overflow-hidden relative",
-                    isCollapsed ? "w-14 h-14" : "w-10 h-10"
-                  )}>
-                    <ImageWithFallback
-                      src={subject.image}
-                      alt={subject.name}
-                      containerClassName="w-full h-full"
-                      className="group-hover:scale-110 transition-transform duration-500"
-                      fallbackGradient={subject.gradient}
-                      fallbackText={subject.name[0]}
-                      showBlur={false}
-                    />
-                  </div>
-                  {!isCollapsed && (
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate group-hover:text-[#1DB954] transition-colors">{subject.name}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">{subject.topics.length} Topics</span>
-                        <span className="w-1 h-1 bg-gray-700 rounded-full" />
-                        <span className={cn(
-                          "text-[9px] font-bold",
-                          subject.readiness > 70 ? "text-[#1DB954]" : "text-yellow-500"
-                        )}>{subject.readiness}% Ready</span>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
+                  subject={subject} 
+                  isCollapsed={isCollapsed} 
+                  onClick={onSubjectClick} 
+                />
               ))}
             </div>
           </div>
@@ -238,4 +249,4 @@ export default function Sidebar({ subjects, onSubjectClick }: SidebarProps) {
       </motion.div>
     </>
   );
-}
+});

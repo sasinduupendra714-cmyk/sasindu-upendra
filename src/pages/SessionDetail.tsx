@@ -7,11 +7,13 @@ import { Clock, BookOpen, Target, ArrowLeft, Sparkles } from 'lucide-react';
 import StreamingUI from '../components/StreamingUI';
 import { streamStudyAdvice } from '../services/gemini';
 
+import { useShallow } from 'zustand/react/shallow';
+
 export default function SessionDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { session, loading, error } = useStudySession(id);
-  const { subjects } = useAppStore();
+  const { subjects } = useAppStore(useShallow(state => ({ subjects: state.subjects })));
   const [aiAdvice, setAiAdvice] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
 
